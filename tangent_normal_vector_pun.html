@@ -112,6 +112,13 @@
             ['0', false],
             ['1', true]
         ]);
+
+        // Reverse mapping for updating URL
+        const REVERSE_VALUE_MAP = new Map([
+            [false, '0'],
+            [true, '1']
+        ]);
+
         // Initialize checkboxes from URL parameters
         function initializeFromURL() {
             const params = new URLSearchParams(window.location.search);
@@ -128,7 +135,28 @@
                 }
             });
         }
-        initializeFromURL();
+
+        // Update URL when checkboxes change
+        function updateURL() {
+            const params = new URLSearchParams();
+            const checkboxIds = ['tan-base', 'tan-dir', 'norm-base', 'norm-dir'];
+            checkboxIds.forEach(id => {
+                const checkbox = document.getElementById(id);
+                params.set(id, REVERSE_VALUE_MAP.get(checkbox.checked));
+            });
+
+            // Update URL without reloading the page
+            const newURL = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState({ path: newURL }, '', newURL);
+        }
+
+        // Add event listeners to checkboxes
+        function setupCheckboxListeners() {
+            const checkboxIds = ['tan-base', 'tan-dir', 'norm-base', 'norm-dir'];
+            checkboxIds.forEach(id => {
+                document.getElementById(id).addEventListener('change', updateURL);
+            });
+        }
 
         function createDirectionIndicators() {
             for (let i = 0; i < NUM_DIRECTIONS; i++) {
@@ -181,7 +209,6 @@
                 const pre_dir = new DOMPoint(INDICATOR_LENGTH * Math.cos(angle_rot), INDICATOR_LENGTH * Math.sin(angle_rot))
                 const base = pre_base.matrixTransform(tx_tb);
                 const dir = pre_dir.matrixTransform(tx_td);
-								/* const base = pre_base */;
 
                 arrow.setAttribute("x1", base.x);
                 arrow.setAttribute("y1", base.y);
@@ -206,6 +233,9 @@
             requestAnimationFrame(animation);
         }
 
+        // Initialize everything
+        initializeFromURL();
+        setupCheckboxListeners();
         createDirectionIndicators();
         animation();
     </script>
