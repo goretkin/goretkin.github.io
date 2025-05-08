@@ -2,17 +2,15 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Policy Execution Timing Diagram</title>
-  <!-- Include Tailwind CSS via CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
-  <style>
-    /* Additional custom styles if needed */
-    body {
-      font-family: Arial, sans-serif;
-    }
 
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+
+  <style>
+    /* Custom styles only for slider appearance and label display */
     .slider {
       -webkit-appearance: none;
       width: 100%;
@@ -22,16 +20,7 @@
       outline: none;
     }
 
-    .slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #4299e1;
-      cursor: pointer;
-    }
-
+    .slider::-webkit-slider-thumb,
     .slider::-moz-range-thumb {
       width: 20px;
       height: 20px;
@@ -60,12 +49,15 @@
   </style>
 </head>
 
-<body class="bg-gray-100 p-4">
-  <div class="max-w-4xl mx-auto">
+<body class="h-screen flex flex-col overflow-hidden bg-gray-100 font-sans">
+
+  <!-- Slider Controls -->
+  <div id="sliders" class="max-w-4xl mx-auto p-4 flex-shrink-0">
     <h1 class="text-2xl font-bold mb-6 text-center">Policy Execution Timing Diagram</h1>
 
     <div class="bg-white rounded-lg shadow p-6 mb-6">
       <h3 class="text-lg font-medium text-gray-900 mb-4">Global Parameters</h3>
+
       <div class="mb-4">
         <div class="slider-label">
           <span class="text-sm text-gray-700">Observation Period:</span>
@@ -73,6 +65,7 @@
         </div>
         <input type="range" id="obsPeriod" min="40" max="150" class="slider w-full mt-1">
       </div>
+
       <div class="mb-4">
         <div class="slider-label">
           <span class="text-sm text-gray-700">Action Chunk Length:</span>
@@ -80,6 +73,7 @@
         </div>
         <input type="range" id="actionLength" min="50" max="600" class="slider w-full mt-1">
       </div>
+
       <div class="mb-4">
         <div class="slider-label">
           <span class="text-sm text-gray-700">Execution Delay:</span>
@@ -87,6 +81,7 @@
         </div>
         <input type="range" id="execDelay" min="0" max="100" class="slider w-full mt-1">
       </div>
+
       <div>
         <div class="slider-label">
           <span class="text-sm text-gray-700">Blend Ratio:</span>
@@ -148,12 +143,14 @@
         </tbody>
       </table>
     </div>
+  </div>
 
-    <div class="bg-white p-4 rounded-lg shadow">
-      <svg id="timingDiagram" viewBox="0 0 700 600" class="w-full border border-gray-300">
-        <!-- SVG content will be dynamically generated -->
-      </svg>
-    </div>
+  <!-- Timing Diagram SVG Container -->
+  <div id="timingDiagramContainer" class="flex-1 flex items-center justify-center overflow-hidden">
+    <svg id="timingDiagram" viewBox="0 0 700 600" preserveAspectRatio="xMidYMid meet"
+      class="max-w-[90vw] max-h-full h-full border border-gray-800">
+      <!-- SVG content will be generated dynamically -->
+    </svg>
   </div>
 
   <script>
@@ -721,6 +718,7 @@
     // Initialize the diagram
     generateSVG();
   </script>
+
 </body>
 
 </html>
