@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Robotics Timing Diagram</title>
+    <!-- Include Tailwind CSS via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.js"></script>
+    <style>
+        /* Additional custom styles if needed */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4299e1;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4299e1;
+            cursor: pointer;
+        }
+        .value-display {
+            display: inline-block;
+            width: 40px;
+            text-align: right;
+            font-family: monospace;
+            font-size: 14px;
+            background-color: #f3f4f6;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+        .slider-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6 text-center">Interactive Robotics Timing Diagram</h1>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Global Parameters</h3>
+            <div class="mb-4">
+                <div class="slider-label">
+                    <span class="text-sm text-gray-700">Observation Period:</span>
+                    <span id="obsPeriodValue" class="value-display">80</span>
+                </div>
+                <input
+                    type="range"
+                    id="obsPeriod"
+                    min="40"
+                    max="150"
+                    value="80"
+                    class="slider w-full mt-1"
+                >
+            </div>
+            <div class="mb-4">
+                <div class="slider-label">
+                    <span class="text-sm text-gray-700">Action Chunk Length:</span>
+                    <span id="actionLengthValue" class="value-display">500</span>
+                </div>
+                <input
+                    type="range"
+                    id="actionLength"
+                    min="50"
+                    max="600"
+                    value="500"
+                    class="slider w-full mt-1"
+                >
+            </div>
+            <div class="mb-4">
+                <div class="slider-label">
+                    <span class="text-sm text-gray-700">Execution Delay:</span>
+                    <span id="execDelayValue" class="value-display">0</span>
+                </div>
+                <input
+                    type="range"
+                    id="execDelay"
+                    min="0"
+                    max="100"
+                    value="0"
+                    class="slider w-full mt-1"
+                >
+            </div>
+            <div>
+                <div class="slider-label">
+                    <span class="text-sm text-gray-700">Blend Ratio:</span>
+                    <span id="blendRatioValue" class="value-display">0.5</span>
+                </div>
+                <input
+                    type="range"
+                    id="blendRatio"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.5"
+                    class="slider w-full mt-1"
+                >
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <h3 class="text-md font-medium text-gray-900 mb-4">Timing Parameters</h3>
+
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr>
+                        <th class="text-left p-2"></th>
+                        <th class="text-left p-2">Time Step [i]</th>
+                        <th class="text-left p-2">Time Step [i+1]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Processing Delay Row -->
+                    <tr>
+                        <td class="p-2 font-medium">Processing Delay</td>
+                        <td class="p-2">
+                            <div class="slider-label">
+                                <span class="text-sm text-gray-700">Value:</span>
+                                <span id="procDelay1Value" class="value-display">100</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="procDelay1"
+                                min="20"
+                                max="200"
+                                value="100"
+                                class="slider w-full mt-1"
+                            >
+                        </td>
+                        <td class="p-2">
+                            <div class="slider-label">
+                                <span class="text-sm text-gray-700">Value:</span>
+                                <span id="procDelay2Value" class="value-display">100</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="procDelay2"
+                                min="20"
+                                max="200"
+                                value="100"
+                                class="slider w-full mt-1"
+                            >
+                        </td>
+                    </tr>
+
+                    <!-- Observation Delay Row -->
+                    <tr>
+                        <td class="p-2 font-medium">Observation Delay</td>
+                        <td class="p-2">
+                            <div class="slider-label">
+                                <span class="text-sm text-gray-700">Value:</span>
+                                <span id="obsDelay1Value" class="value-display">50</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="obsDelay1"
+                                min="10"
+                                max="100"
+                                value="50"
+                                class="slider w-full mt-1"
+                            >
+                        </td>
+                        <td class="p-2">
+                            <div class="slider-label">
+                                <span class="text-sm text-gray-700">Value:</span>
+                                <span id="obsDelay2Value" class="value-display">50</span>
+                            </div>
+                            <input
+                                type="range"
+                                id="obsDelay2"
+                                min="10"
+                                max="100"
+                                value="50"
+                                class="slider w-full mt-1"
+                            >
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-white p-4 rounded-lg shadow">
+            <svg id="timingDiagram" viewBox="0 0 700 600" class="w-full border border-gray-300">
+                <!-- SVG content will be dynamically generated -->
+            </svg>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let obsDelays = [50, 50];
+        let procDelays = [100, 100];
+        let obsPeriod = 80;
+        let actionLength = 500;
+        let execDelay = 0;
+        let blendRatio = 0.5;
+
+        // Get DOM elements
+        const obsDelay1Slider = document.getElementById('obsDelay1');
+        const procDelay1Slider = document.getElementById('procDelay1');
+        const obsDelay2Slider = document.getElementById('obsDelay2');
+        const procDelay2Slider = document.getElementById('procDelay2');
+        const obsPeriodSlider = document.getElementById('obsPeriod');
+        const actionLengthSlider = document.getElementById('actionLength');
+        const execDelaySlider = document.getElementById('execDelay');
+        const blendRatioSlider = document.getElementById('blendRatio');
+
+        const obsDelay1Value = document.getElementById('obsDelay1Value');
+        const procDelay1Value = document.getElementById('procDelay1Value');
+        const obsDelay2Value = document.getElementById('obsDelay2Value');
+        const procDelay2Value = document.getElementById('procDelay2Value');
+        const obsPeriodValue = document.getElementById('obsPeriodValue');
+        const actionLengthValue = document.getElementById('actionLengthValue');
+        const execDelayValue = document.getElementById('execDelayValue');
+        const blendRatioValue = document.getElementById('blendRatioValue');
+
+        // SVG generation function
+        function generateSVG() {
+            const svg = document.getElementById('timingDiagram');
+
+            // Clear previous content
+            svg.innerHTML = '';
+
+            // Create SVG elements
+            const svgNS = "http://www.w3.org/2000/svg";
+
+            // Background rectangle
+            const background = document.createElementNS(svgNS, "rect");
+            background.setAttribute("x", "0");
+            background.setAttribute("y", "0");
+            background.setAttribute("width", "700");
+            background.setAttribute("height", "600");
+            background.setAttribute("fill", "#f8f8f8");
+            background.setAttribute("stroke", "#333");
+            background.setAttribute("stroke-width", "1");
+            svg.appendChild(background);
+
+            // Create group for coordinate system
+            const g = document.createElementNS(svgNS, "g");
+            g.setAttribute("transform", "translate(50, 550)");
+
+            // X-axis
+            const xAxis = document.createElementNS(svgNS, "line");
+            xAxis.setAttribute("x1", "0");
+            xAxis.setAttribute("y1", "0");
+            xAxis.setAttribute("x2", "595");
+            xAxis.setAttribute("y2", "0");
+            xAxis.setAttribute("stroke", "#333");
+            xAxis.setAttribute("stroke-width", "2");
+            g.appendChild(xAxis);
+
+            // X-axis arrow
+            const xArrow = document.createElementNS(svgNS, "polygon");
+            xArrow.setAttribute("points", "600,0 590,-5 590,5");
+            xArrow.setAttribute("fill", "#333");
+            g.appendChild(xArrow);
+
+            // X-axis label
+            const xLabel = document.createElementNS(svgNS, "text");
+            xLabel.setAttribute("x", "300");
+            xLabel.setAttribute("y", "30");
+            xLabel.setAttribute("font-family", "Arial");
+            xLabel.setAttribute("font-size", "14");
+            xLabel.setAttribute("text-anchor", "middle");
+            xLabel.textContent = "Horizon time";
+            g.appendChild(xLabel);
+
+            // Y-axis
+            const yAxis = document.createElementNS(svgNS, "line");
+            yAxis.setAttribute("x1", "0");
+            yAxis.setAttribute("y1", "0");
+            yAxis.setAttribute("x2", "0");
+            yAxis.setAttribute("y2", "-495");
+            yAxis.setAttribute("stroke", "#333");
+            yAxis.setAttribute("stroke-width", "2");
+            g.appendChild(yAxis);
+
+            // Y-axis arrow
+            const yArrow = document.createElementNS(svgNS, "polygon");
+            yArrow.setAttribute("points", "0,-500 -5,-490 5,-490");
+            yArrow.setAttribute("fill", "#333");
+            g.appendChild(yArrow);
+
+            // Y-axis label
+            const yLabel = document.createElementNS(svgNS, "text");
+            yLabel.setAttribute("x", "-30");
+            yLabel.setAttribute("y", "-250");
+            yLabel.setAttribute("font-family", "Arial");
+            yLabel.setAttribute("font-size", "14");
+            yLabel.setAttribute("text-anchor", "middle");
+            yLabel.setAttribute("transform", "rotate(-90, -30, -250)");
+            yLabel.textContent = "Wall-clock time";
+            g.appendChild(yLabel);
+
+            // Origin point
+            const origin = document.createElementNS(svgNS, "circle");
+            origin.setAttribute("cx", "0");
+            origin.setAttribute("cy", "0");
+            origin.setAttribute("r", "3");
+            origin.setAttribute("fill", "#333");
+            g.appendChild(origin);
+
+            // Diagonal line (y=x)
+            const diagonal = document.createElementNS(svgNS, "line");
+            diagonal.setAttribute("x1", "0");
+            diagonal.setAttribute("y1", "0");
+            diagonal.setAttribute("x2", "700");
+            diagonal.setAttribute("y2", "-700");
+            diagonal.setAttribute("stroke", "#3366cc");
+            diagonal.setAttribute("stroke-width", "2");
+            diagonal.setAttribute("stroke-dasharray", "5,5");
+            g.appendChild(diagonal);
+
+            // Add 5 tick marks on the y-axis with projections to diagonal
+            const tickPositions = [-440, -405, -370, -335, -300];
+
+            tickPositions.forEach((yPos, index) => {
+                // Reverse index for labels (4-index will give us 4,3,2,1,0 instead of 0,1,2,3,4)
+                const reverseIndex = 4 - index;
+
+                // Y-axis tick
+                const tick = document.createElementNS(svgNS, "line");
+                tick.setAttribute("x1", "0");
+                tick.setAttribute("y1", yPos.toString());
+                tick.setAttribute("x2", "-5");
+                tick.setAttribute("y2", yPos.toString());
+                tick.setAttribute("stroke", "#333");
+                tick.setAttribute("stroke-width", "1.5");
+                g.appendChild(tick);
+
+                // Add tick label (act[j+index])
+                const tickLabel = document.createElementNS(svgNS, "text");
+                tickLabel.setAttribute("x", "-10");
+                tickLabel.setAttribute("y", yPos.toString());
+                tickLabel.setAttribute("font-family", "Arial");
+                tickLabel.setAttribute("font-size", "12");
+                tickLabel.setAttribute("fill", "#3366cc");
+                tickLabel.setAttribute("text-anchor", "end");
+                tickLabel.setAttribute("dominant-baseline", "middle");
+                tickLabel.textContent = `act[j+${reverseIndex}]`;
+                g.appendChild(tickLabel);
+
+                // Calculate corresponding x position on diagonal (where y=x)
+                const xOnDiag = -yPos; // Since y = -x on our coordinate system
+
+                // Projection line to diagonal
+                const projLine = document.createElementNS(svgNS, "line");
+                projLine.setAttribute("x1", "0");
+                projLine.setAttribute("y1", yPos.toString());
+                projLine.setAttribute("x2", xOnDiag.toString());
+                projLine.setAttribute("y2", yPos.toString());
+                projLine.setAttribute("stroke", "#999");
+                projLine.setAttribute("stroke-width", "0.75");
+                projLine.setAttribute("stroke-dasharray", "2,2");
+                g.appendChild(projLine);
+
+                // Point where projection meets diagonal
+                const diagPoint = document.createElementNS(svgNS, "circle");
+                diagPoint.setAttribute("cx", xOnDiag.toString());
+                diagPoint.setAttribute("cy", yPos.toString());
+                diagPoint.setAttribute("r", "3");
+                diagPoint.setAttribute("fill", "#3366cc");
+                g.appendChild(diagPoint);
+
+                // Draw weighted lines from act point to action chunks
+                // Calculate where lines should point based on execDelay
+
+                // Calculate progressive weight based on act point position (from act[j+0] to act[j+4])
+                // When blend_ratio = 0, action_chunk[i+1] has full weight for all act points
+                // When blend_ratio = 1, action_chunk[i] has full weight for all act points
+                // When blend_ratio = 0.5, weight changes progressively from act[j+0] to act[j+4]
+                const actIndexReversed = 4 - index; // This gives 4,3,2,1,0 for our 5 act points
+
+                // Calculate weight for action_chunk[i] (first chunk)
+                let weight1 = 0;
+                weight1 =  Math.max(0.0, Math.min(1.0, actIndexReversed / 4 + 2 * (blendRatio - 0.5)))
+
+                // Weight for action_chunk[i+1] (second chunk) is complement of weight1
+                let weight2 = 1 - weight1;
+
+                // For action chunk [i]
+                // Calculate action chunk positions for step [i]
+                const chunk1X = 50;
+                const chunk1Y = -(50 + obsDelays[0] + procDelays[0]);
+
+                // The target x position should be directly below the act point plus the exec_delay
+                const targetX1 = Math.max(chunk1X, Math.min(xOnDiag + execDelay, chunk1X + actionLength));
+
+                // Only draw if target is within the action chunk horizontal range
+                if (targetX1 >= chunk1X && targetX1 <= (chunk1X + actionLength)) {
+                    const weightedLine1 = document.createElementNS(svgNS, "line");
+                    weightedLine1.setAttribute("x1", xOnDiag.toString());
+                    weightedLine1.setAttribute("y1", yPos.toString());
+                    weightedLine1.setAttribute("x2", targetX1.toString());
+                    weightedLine1.setAttribute("y2", chunk1Y.toString());
+                    weightedLine1.setAttribute("stroke", "#9b59b6");  // Purple
+                    weightedLine1.setAttribute("stroke-width", "2");
+                    weightedLine1.setAttribute("stroke-opacity", weight1.toString());  // Apply weight as opacity
+                    g.appendChild(weightedLine1);
+                }
+
+                // For action chunk [i+1]
+                // Calculate action chunk positions for step [i+1]
+                const chunk2X = 50 + obsPeriod;
+                const chunk2Y = -(chunk2X + obsDelays[1] + procDelays[1]);
+
+                // The target x position should be directly below the act point plus the exec_delay
+                const targetX2 = Math.max(chunk2X, Math.min(xOnDiag + execDelay, chunk2X + actionLength));
+
+                // Only draw if target is within the action chunk horizontal range
+                if (targetX2 >= chunk2X && targetX2 <= (chunk2X + actionLength)) {
+                    const weightedLine2 = document.createElementNS(svgNS, "line");
+                    weightedLine2.setAttribute("x1", xOnDiag.toString());
+                    weightedLine2.setAttribute("y1", yPos.toString());
+                    weightedLine2.setAttribute("x2", targetX2.toString());
+                    weightedLine2.setAttribute("y2", chunk2Y.toString());
+                    weightedLine2.setAttribute("stroke", "#9b59b6");  // Purple
+                    weightedLine2.setAttribute("stroke-width", "2");
+                    weightedLine2.setAttribute("stroke-opacity", weight2.toString());  // Apply weight as opacity
+                    g.appendChild(weightedLine2);
+                }
+            });
+
+            // Add markers for circle endpoints
+            const defs = document.createElementNS(svgNS, "defs");
+            svg.appendChild(defs);
+
+            const markerCircle = document.createElementNS(svgNS, "marker");
+            markerCircle.setAttribute("id", "markerCircle");
+            markerCircle.setAttribute("markerWidth", "8");
+            markerCircle.setAttribute("markerHeight", "8");
+            markerCircle.setAttribute("refX", "4");
+            markerCircle.setAttribute("refY", "4");
+            defs.appendChild(markerCircle);
+
+            const markerCircleShape = document.createElementNS(svgNS, "circle");
+            markerCircleShape.setAttribute("cx", "4");
+            markerCircleShape.setAttribute("cy", "4");
+            markerCircleShape.setAttribute("r", "2");
+            markerCircleShape.setAttribute("fill", "#e74c3c");
+            markerCircle.appendChild(markerCircleShape);
+
+            // Observation period marker
+            const periodLine = document.createElementNS(svgNS, "line");
+            periodLine.setAttribute("x1", "50");
+            periodLine.setAttribute("y1", "10");
+            periodLine.setAttribute("x2", (50 + obsPeriod).toString());
+            periodLine.setAttribute("y2", "10");
+            periodLine.setAttribute("stroke", "#e74c3c");
+            periodLine.setAttribute("stroke-width", "2");
+            periodLine.setAttribute("marker-start", "url(#markerCircle)");
+            periodLine.setAttribute("marker-end", "url(#markerCircle)");
+            g.appendChild(periodLine);
+
+            const periodLabel = document.createElementNS(svgNS, "text");
+            periodLabel.setAttribute("x", (50 + obsPeriod/2).toString());
+            periodLabel.setAttribute("y", "25");
+            periodLabel.setAttribute("font-family", "Arial");
+            periodLabel.setAttribute("font-size", "12");
+            periodLabel.setAttribute("fill", "#e74c3c");
+            periodLabel.setAttribute("text-anchor", "middle");
+            periodLabel.textContent = "obs_period";
+            g.appendChild(periodLabel);
+
+            // Render time steps
+            renderTimeStep(g, svgNS, 0, 50, "[i]");
+            renderTimeStep(g, svgNS, 1, 50 + obsPeriod, "[i+1]");
+
+            svg.appendChild(g);
+        }
+
+        function renderTimeStep(parent, svgNS, index, xOffset, labelSuffix) {
+            const obsDelayValue = obsDelays[index];
+            const procDelayValue = procDelays[index];
+
+            // Calculate positions
+            const baseY = -xOffset;
+            const obsY = baseY - obsDelayValue;
+            const actionY = obsY - procDelayValue;
+
+            // Observation point
+            const obsPoint = document.createElementNS(svgNS, "circle");
+            obsPoint.setAttribute("cx", xOffset.toString());
+            obsPoint.setAttribute("cy", obsY.toString());
+            obsPoint.setAttribute("r", "4");
+            obsPoint.setAttribute("fill", "#e74c3c");
+            parent.appendChild(obsPoint);
+
+            // Observation label
+            const obsLabel = document.createElementNS(svgNS, "text");
+            obsLabel.setAttribute("x", (xOffset - 10).toString());
+            obsLabel.setAttribute("y", obsY.toString());
+            obsLabel.setAttribute("font-family", "Arial");
+            obsLabel.setAttribute("font-size", "12");
+            obsLabel.setAttribute("fill", "#e74c3c");
+            obsLabel.setAttribute("text-anchor", "end");  // Right-align for left positioning
+            obsLabel.textContent = "obs" + labelSuffix;
+            parent.appendChild(obsLabel);
+
+            // Projection to X-axis
+            const projLine = document.createElementNS(svgNS, "line");
+            projLine.setAttribute("x1", xOffset.toString());
+            projLine.setAttribute("y1", obsY.toString());
+            projLine.setAttribute("x2", xOffset.toString());
+            projLine.setAttribute("y2", "0");
+            projLine.setAttribute("stroke", "#e74c3c");
+            projLine.setAttribute("stroke-width", "1");
+            projLine.setAttribute("stroke-dasharray", "1,1");
+            parent.appendChild(projLine);
+
+            const projPoint = document.createElementNS(svgNS, "circle");
+            projPoint.setAttribute("cx", xOffset.toString());
+            projPoint.setAttribute("cy", "0");
+            projPoint.setAttribute("r", "3");
+            projPoint.setAttribute("fill", "#e74c3c");
+            projPoint.setAttribute("opacity", "0.5");
+            parent.appendChild(projPoint);
+
+            // Vertical distance for obs_delay
+            const obsDelayLine = document.createElementNS(svgNS, "line");
+            obsDelayLine.setAttribute("x1", xOffset.toString());
+            obsDelayLine.setAttribute("y1", obsY.toString());
+            obsDelayLine.setAttribute("x2", xOffset.toString());
+            obsDelayLine.setAttribute("y2", baseY.toString());
+            obsDelayLine.setAttribute("stroke", "#e74c3c");
+            obsDelayLine.setAttribute("stroke-width", "1");
+            obsDelayLine.setAttribute("stroke-dasharray", "3,3");
+            parent.appendChild(obsDelayLine);
+
+            // Label for obs_delay
+            const obsDelayLabel = document.createElementNS(svgNS, "text");
+            obsDelayLabel.setAttribute("x", (xOffset - 35).toString());
+            obsDelayLabel.setAttribute("y", (baseY + (obsY - baseY)/2).toString());
+            obsDelayLabel.setAttribute("font-family", "Arial");
+            obsDelayLabel.setAttribute("font-size", "12");
+            obsDelayLabel.setAttribute("fill", "#e74c3c");
+            obsDelayLabel.textContent = "obs_delay" + labelSuffix;
+            parent.appendChild(obsDelayLabel);
+
+            // Processing delay line
+            const procDelayLine = document.createElementNS(svgNS, "line");
+            procDelayLine.setAttribute("x1", xOffset.toString());
+            procDelayLine.setAttribute("y1", actionY.toString());
+            procDelayLine.setAttribute("x2", xOffset.toString());
+            procDelayLine.setAttribute("y2", obsY.toString());
+            procDelayLine.setAttribute("stroke", "#27ae60");
+            procDelayLine.setAttribute("stroke-width", "1");
+            procDelayLine.setAttribute("stroke-dasharray", "3,3");
+            parent.appendChild(procDelayLine);
+
+            // Label for proc_delay
+            const procDelayLabel = document.createElementNS(svgNS, "text");
+            procDelayLabel.setAttribute("x", (xOffset - 35).toString());
+            procDelayLabel.setAttribute("y", (obsY + (actionY - obsY)/2).toString());
+            procDelayLabel.setAttribute("font-family", "Arial");
+            procDelayLabel.setAttribute("font-size", "12");
+            procDelayLabel.setAttribute("fill", "#27ae60");
+            procDelayLabel.textContent = "proc_delay" + labelSuffix;
+            parent.appendChild(procDelayLabel);
+
+            // Action chunk
+            const actionChunk = document.createElementNS(svgNS, "line");
+            actionChunk.setAttribute("x1", xOffset.toString());
+            actionChunk.setAttribute("y1", actionY.toString());
+            actionChunk.setAttribute("x2", (xOffset + actionLength).toString());
+            actionChunk.setAttribute("y2", actionY.toString());
+            actionChunk.setAttribute("stroke", "#27ae60");
+            actionChunk.setAttribute("stroke-width", "4");
+            actionChunk.setAttribute("stroke-linecap", "round");
+            parent.appendChild(actionChunk);
+
+            // Label for action chunk
+            const actionChunkLabel = document.createElementNS(svgNS, "text");
+            actionChunkLabel.setAttribute("x", (xOffset + Math.min(actionLength/2, 150)).toString());
+            actionChunkLabel.setAttribute("y", (actionY + 15).toString());
+            actionChunkLabel.setAttribute("font-family", "Arial");
+            actionChunkLabel.setAttribute("font-size", "12");
+            actionChunkLabel.setAttribute("fill", "#27ae60");
+            actionChunkLabel.setAttribute("text-anchor", "middle");
+            actionChunkLabel.textContent = "action_chunk" + labelSuffix;
+            parent.appendChild(actionChunkLabel);
+        }
+
+        // Event handlers for sliders
+        actionLengthSlider.addEventListener('input', function() {
+            actionLength = parseInt(this.value);
+            actionLengthValue.textContent = this.value;
+            generateSVG();
+        });
+
+        execDelaySlider.addEventListener('input', function() {
+            execDelay = parseInt(this.value);
+            execDelayValue.textContent = this.value;
+            generateSVG();
+        });
+
+        blendRatioSlider.addEventListener('input', function() {
+            blendRatio = parseFloat(this.value);
+            blendRatioValue.textContent = this.value;
+            generateSVG();
+        });
+
+        obsDelay1Slider.addEventListener('input', function() {
+            obsDelays[0] = parseInt(this.value);
+            obsDelay1Value.textContent = this.value;
+            generateSVG();
+        });
+
+        procDelay1Slider.addEventListener('input', function() {
+            procDelays[0] = parseInt(this.value);
+            procDelay1Value.textContent = this.value;
+            generateSVG();
+        });
+
+        obsDelay2Slider.addEventListener('input', function() {
+            obsDelays[1] = parseInt(this.value);
+            obsDelay2Value.textContent = this.value;
+            generateSVG();
+        });
+
+        procDelay2Slider.addEventListener('input', function() {
+            procDelays[1] = parseInt(this.value);
+            procDelay2Value.textContent = this.value;
+            generateSVG();
+        });
+
+        obsPeriodSlider.addEventListener('input', function() {
+            obsPeriod = parseInt(this.value);
+            obsPeriodValue.textContent = this.value;
+            generateSVG();
+        });
+
+        // Initialize the diagram
+        generateSVG();
+    </script>
+</body>
+</html>
