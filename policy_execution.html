@@ -90,14 +90,14 @@
             <div class="mb-4">
                 <div class="slider-label">
                     <span class="text-sm text-gray-700">Execution Delay:</span>
-                    <span id="execDelayValue" class="value-display">0</span>
+                    <span id="execDelayValue" class="value-display">50</span>
                 </div>
                 <input
                     type="range"
                     id="execDelay"
                     min="0"
                     max="100"
-                    value="0"
+                    value="50"
                     class="slider w-full mt-1"
                 >
             </div>
@@ -208,11 +208,14 @@
 
     <script>
         // State variables
+        // TODO: don't have defaults here
+        // and in the slider values
+        // and in `value-display`
         let obsDelays = [50, 50];
         let procDelays = [100, 100];
         let obsPeriod = 80;
         let actionLength = 500;
-        let execDelay = 0;
+        let execDelay = 50;
         let blendRatio = 0.5;
 
         // Get DOM elements
