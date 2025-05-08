@@ -62,49 +62,46 @@
             <div class="mb-4">
                 <div class="slider-label">
                     <span class="text-sm text-gray-700">Observation Period:</span>
-                    <span id="obsPeriodValue" class="value-display">80</span>
+                    <span id="obsPeriodValue" class="value-display"></span>
                 </div>
                 <input
                     type="range"
                     id="obsPeriod"
                     min="40"
                     max="150"
-                    value="80"
                     class="slider w-full mt-1"
                 >
             </div>
             <div class="mb-4">
                 <div class="slider-label">
                     <span class="text-sm text-gray-700">Action Chunk Length:</span>
-                    <span id="actionLengthValue" class="value-display">500</span>
+                    <span id="actionLengthValue" class="value-display"></span>
                 </div>
                 <input
                     type="range"
                     id="actionLength"
                     min="50"
                     max="600"
-                    value="500"
                     class="slider w-full mt-1"
                 >
             </div>
             <div class="mb-4">
                 <div class="slider-label">
                     <span class="text-sm text-gray-700">Execution Delay:</span>
-                    <span id="execDelayValue" class="value-display">50</span>
+                    <span id="execDelayValue" class="value-display"></span>
                 </div>
                 <input
                     type="range"
                     id="execDelay"
                     min="0"
                     max="100"
-                    value="50"
                     class="slider w-full mt-1"
                 >
             </div>
             <div>
                 <div class="slider-label">
                     <span class="text-sm text-gray-700">Blend Ratio:</span>
-                    <span id="blendRatioValue" class="value-display">0.5</span>
+                    <span id="blendRatioValue" class="value-display"></span>
                 </div>
                 <input
                     type="range"
@@ -112,7 +109,6 @@
                     min="0"
                     max="1"
                     step="0.01"
-                    value="0.5"
                     class="slider w-full mt-1"
                 >
             </div>
@@ -136,28 +132,26 @@
                         <td class="p-2">
                             <div class="slider-label">
                                 <span class="text-sm text-gray-700">Value:</span>
-                                <span id="procDelay1Value" class="value-display">100</span>
+                                <span id="procDelay1Value" class="value-display"></span>
                             </div>
                             <input
                                 type="range"
                                 id="procDelay1"
                                 min="20"
                                 max="200"
-                                value="100"
                                 class="slider w-full mt-1"
                             >
                         </td>
                         <td class="p-2">
                             <div class="slider-label">
                                 <span class="text-sm text-gray-700">Value:</span>
-                                <span id="procDelay2Value" class="value-display">100</span>
+                                <span id="procDelay2Value" class="value-display"></span>
                             </div>
                             <input
                                 type="range"
                                 id="procDelay2"
                                 min="20"
                                 max="200"
-                                value="100"
                                 class="slider w-full mt-1"
                             >
                         </td>
@@ -169,28 +163,26 @@
                         <td class="p-2">
                             <div class="slider-label">
                                 <span class="text-sm text-gray-700">Value:</span>
-                                <span id="obsDelay1Value" class="value-display">50</span>
+                                <span id="obsDelay1Value" class="value-display"></span>
                             </div>
                             <input
                                 type="range"
                                 id="obsDelay1"
                                 min="10"
                                 max="100"
-                                value="50"
                                 class="slider w-full mt-1"
                             >
                         </td>
                         <td class="p-2">
                             <div class="slider-label">
                                 <span class="text-sm text-gray-700">Value:</span>
-                                <span id="obsDelay2Value" class="value-display">50</span>
+                                <span id="obsDelay2Value" class="value-display"></span>
                             </div>
                             <input
                                 type="range"
                                 id="obsDelay2"
                                 min="10"
                                 max="100"
-                                value="50"
                                 class="slider w-full mt-1"
                             >
                         </td>
@@ -207,16 +199,23 @@
     </div>
 
     <script>
-        // State variables
-        // TODO: don't have defaults here
-        // and in the slider values
-        // and in `value-display`
-        let obsDelays = [50, 50];
-        let procDelays = [100, 100];
-        let obsPeriod = 80;
-        let actionLength = 500;
-        let execDelay = 50;
-        let blendRatio = 0.5;
+        // Define a single source of truth for default values
+        const defaults = {
+            obsPeriod: 80,
+            actionLength: 500,
+            execDelay: 50,
+            blendRatio: 0.5,
+            obsDelays: [50, 50],
+            procDelays: [100, 100]
+        };
+
+        // State variables initialized from defaults
+        let obsDelays = [...defaults.obsDelays];
+        let procDelays = [...defaults.procDelays];
+        let obsPeriod = defaults.obsPeriod;
+        let actionLength = defaults.actionLength;
+        let execDelay = defaults.execDelay;
+        let blendRatio = defaults.blendRatio;
 
         // Get DOM elements
         const obsDelay1Slider = document.getElementById('obsDelay1');
@@ -236,6 +235,36 @@
         const actionLengthValue = document.getElementById('actionLengthValue');
         const execDelayValue = document.getElementById('execDelayValue');
         const blendRatioValue = document.getElementById('blendRatioValue');
+
+        // Initialize sliders and value displays from defaults
+        function initializeDefaults() {
+            obsPeriodSlider.value = defaults.obsPeriod;
+            obsPeriodValue.textContent = defaults.obsPeriod;
+
+            actionLengthSlider.value = defaults.actionLength;
+            actionLengthValue.textContent = defaults.actionLength;
+
+            execDelaySlider.value = defaults.execDelay;
+            execDelayValue.textContent = defaults.execDelay;
+
+            blendRatioSlider.value = defaults.blendRatio;
+            blendRatioValue.textContent = defaults.blendRatio;
+
+            obsDelay1Slider.value = defaults.obsDelays[0];
+            obsDelay1Value.textContent = defaults.obsDelays[0];
+
+            procDelay1Slider.value = defaults.procDelays[0];
+            procDelay1Value.textContent = defaults.procDelays[0];
+
+            obsDelay2Slider.value = defaults.obsDelays[1];
+            obsDelay2Value.textContent = defaults.obsDelays[1];
+
+            procDelay2Slider.value = defaults.procDelays[1];
+            procDelay2Value.textContent = defaults.procDelays[1];
+        }
+
+        // Call initialization
+        initializeDefaults();
 
         // SVG generation function
         function generateSVG() {
