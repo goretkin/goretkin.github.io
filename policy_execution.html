@@ -209,13 +209,15 @@
             procDelays: [100, 100]
         };
 
-        // State variables initialized from defaults
-        let obsDelays = [...defaults.obsDelays];
-        let procDelays = [...defaults.procDelays];
-        let obsPeriod = defaults.obsPeriod;
-        let actionLength = defaults.actionLength;
-        let execDelay = defaults.execDelay;
-        let blendRatio = defaults.blendRatio;
+        // State object to hold all diagram state
+        const state = {
+            obsPeriod: defaults.obsPeriod,
+            actionLength: defaults.actionLength,
+            execDelay: defaults.execDelay,
+            blendRatio: defaults.blendRatio,
+            obsDelays: [...defaults.obsDelays],
+            procDelays: [...defaults.procDelays]
+        };
 
         // Get DOM elements
         const obsDelay1Slider = document.getElementById('obsDelay1');
@@ -263,8 +265,87 @@
             procDelay2Value.textContent = defaults.procDelays[1];
         }
 
+        // Initialize sliders and other inputs from URL parameters
+        function initializeFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const inputIds = [
+                'obsPeriod', 'actionLength', 'execDelay', 'blendRatio',
+                'obsDelays', 'procDelays'
+            ];
+
+            inputIds.forEach(id => {
+                const value = params.get(id);
+                if (value !== null) {
+                    try {
+                        state[id] = JSON.parse(value);
+                    } catch (e) {
+                        console.error(`Failed to parse ${id}:`, e);
+                    }
+                }
+            });
+        }
+
+        // Update DOM elements based on state variables
+        function updateDOMFromState() {
+            obsPeriodSlider.value = state.obsPeriod;
+            obsPeriodValue.textContent = state.obsPeriod;
+
+            actionLengthSlider.value = state.actionLength;
+            actionLengthValue.textContent = state.actionLength;
+
+            execDelaySlider.value = state.execDelay;
+            execDelayValue.textContent = state.execDelay;
+
+            blendRatioSlider.value = state.blendRatio;
+            blendRatioValue.textContent = state.blendRatio;
+
+            state.obsDelays.forEach((val, index) => {
+                const input = document.getElementById(`obsDelay${index + 1}`);
+                const display = document.getElementById(`obsDelay${index + 1}Value`);
+                if (input && display) {
+                    input.value = val;
+                    display.textContent = val;
+                }
+            });
+
+            state.procDelays.forEach((val, index) => {
+                const input = document.getElementById(`procDelay${index + 1}`);
+                const display = document.getElementById(`procDelay${index + 1}Value`);
+                if (input && display) {
+                    input.value = val;
+                    display.textContent = val;
+                }
+            });
+        }
+
+        // Update URL when sliders or other inputs change
+        function updateURL() {
+            const params = new URLSearchParams();
+            Object.keys(state).forEach(key => {
+                params.set(key, JSON.stringify(state[key]));
+            });
+
+            const newURL = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState({ path: newURL }, '', newURL);
+        }
+
+        // Add event listeners to sliders and other inputs
+        function setupInputListeners() {
+            const inputIds = [
+                'obsPeriod', 'actionLength', 'execDelay', 'blendRatio',
+                'obsDelay1', 'procDelay1', 'obsDelay2', 'procDelay2'
+            ];
+
+            inputIds.forEach(id => {
+                document.getElementById(id).addEventListener('input', updateURL);
+            });
+        }
+
         // Call initialization
         initializeDefaults();
+        initializeFromURL();
+        updateDOMFromState();
+        setupInputListeners();
 
         // SVG generation function
         function generateSVG() {
@@ -425,7 +506,7 @@
 
                 // Calculate weight for action_chunk[i] (first chunk)
                 let weight1 = 0;
-                weight1 =  Math.max(0.0, Math.min(1.0, index / 4 + 2 * (blendRatio - 0.5)))
+                weight1 =  Math.max(0.0, Math.min(1.0, index / 4 + 2 * (state.blendRatio - 0.5)))
 
                 // Weight for action_chunk[i+1] (second chunk) is complement of weight1
                 let weight2 = 1 - weight1;
@@ -433,13 +514,13 @@
                 // For action chunk [i]
                 // Calculate action chunk positions for step [i]
                 const chunk1X = 50;
-                const chunk1Y = -(50 + obsDelays[0] + procDelays[0]);
+                const chunk1Y = -(50 + state.obsDelays[0] + state.procDelays[0]);
 
                 // The target x position should be directly below the act point plus the exec_delay
-                const targetX1 = Math.max(chunk1X, Math.min(xOnDiag + execDelay, chunk1X + actionLength));
+                const targetX1 = Math.max(chunk1X, Math.min(xOnDiag + state.execDelay, chunk1X + state.actionLength));
 
                 // Only draw if target is within the action chunk horizontal range
-                if (targetX1 >= chunk1X && targetX1 <= (chunk1X + actionLength)) {
+                if (targetX1 >= chunk1X && targetX1 <= (chunk1X + state.actionLength)) {
                     const weightedLine1 = document.createElementNS(svgNS, "line");
                     weightedLine1.setAttribute("x1", xOnDiag.toString());
                     weightedLine1.setAttribute("y1", yPos.toString());
@@ -453,14 +534,14 @@
 
                 // For action chunk [i+1]
                 // Calculate action chunk positions for step [i+1]
-                const chunk2X = 50 + obsPeriod;
-                const chunk2Y = -(chunk2X + obsDelays[1] + procDelays[1]);
+                const chunk2X = 50 + state.obsPeriod;
+                const chunk2Y = -(chunk2X + state.obsDelays[1] + state.procDelays[1]);
 
                 // The target x position should be directly below the act point plus the exec_delay
-                const targetX2 = Math.max(chunk2X, Math.min(xOnDiag + execDelay, chunk2X + actionLength));
+                const targetX2 = Math.max(chunk2X, Math.min(xOnDiag + state.execDelay, chunk2X + state.actionLength));
 
                 // Only draw if target is within the action chunk horizontal range
-                if (targetX2 >= chunk2X && targetX2 <= (chunk2X + actionLength)) {
+                if (targetX2 >= chunk2X && targetX2 <= (chunk2X + state.actionLength)) {
                     const weightedLine2 = document.createElementNS(svgNS, "line");
                     weightedLine2.setAttribute("x1", xOnDiag.toString());
                     weightedLine2.setAttribute("y1", yPos.toString());
@@ -496,7 +577,7 @@
             const periodLine = document.createElementNS(svgNS, "line");
             periodLine.setAttribute("x1", "50");
             periodLine.setAttribute("y1", "10");
-            periodLine.setAttribute("x2", (50 + obsPeriod).toString());
+            periodLine.setAttribute("x2", (50 + state.obsPeriod).toString());
             periodLine.setAttribute("y2", "10");
             periodLine.setAttribute("stroke", "#e74c3c");
             periodLine.setAttribute("stroke-width", "2");
@@ -505,7 +586,7 @@
             g.appendChild(periodLine);
 
             const periodLabel = document.createElementNS(svgNS, "text");
-            periodLabel.setAttribute("x", (50 + obsPeriod/2).toString());
+            periodLabel.setAttribute("x", (50 + state.obsPeriod/2).toString());
             periodLabel.setAttribute("y", "25");
             periodLabel.setAttribute("font-family", "Arial");
             periodLabel.setAttribute("font-size", "12");
@@ -516,14 +597,14 @@
 
             // Render time steps
             renderTimeStep(g, svgNS, 0, 50, "[i]");
-            renderTimeStep(g, svgNS, 1, 50 + obsPeriod, "[i+1]");
+            renderTimeStep(g, svgNS, 1, 50 + state.obsPeriod, "[i+1]");
 
             svg.appendChild(g);
         }
 
         function renderTimeStep(parent, svgNS, index, xOffset, labelSuffix) {
-            const obsDelayValue = obsDelays[index];
-            const procDelayValue = procDelays[index];
+            const obsDelayValue = state.obsDelays[index];
+            const procDelayValue = state.procDelays[index];
 
             // Calculate positions
             const baseY = -xOffset;
@@ -614,7 +695,7 @@
             const actionChunk = document.createElementNS(svgNS, "line");
             actionChunk.setAttribute("x1", xOffset.toString());
             actionChunk.setAttribute("y1", actionY.toString());
-            actionChunk.setAttribute("x2", (xOffset + actionLength).toString());
+            actionChunk.setAttribute("x2", (xOffset + state.actionLength).toString());
             actionChunk.setAttribute("y2", actionY.toString());
             actionChunk.setAttribute("stroke", "#27ae60");
             actionChunk.setAttribute("stroke-width", "4");
@@ -623,7 +704,7 @@
 
             // Label for action chunk
             const actionChunkLabel = document.createElementNS(svgNS, "text");
-            actionChunkLabel.setAttribute("x", (xOffset + Math.min(actionLength/2, 150)).toString());
+            actionChunkLabel.setAttribute("x", (xOffset + Math.min(state.actionLength/2, 150)).toString());
             actionChunkLabel.setAttribute("y", (actionY + 15).toString());
             actionChunkLabel.setAttribute("font-family", "Arial");
             actionChunkLabel.setAttribute("font-size", "12");
@@ -635,49 +716,49 @@
 
         // Event handlers for sliders
         actionLengthSlider.addEventListener('input', function() {
-            actionLength = parseInt(this.value);
+            state.actionLength = parseInt(this.value);
             actionLengthValue.textContent = this.value;
             generateSVG();
         });
 
         execDelaySlider.addEventListener('input', function() {
-            execDelay = parseInt(this.value);
+            state.execDelay = parseInt(this.value);
             execDelayValue.textContent = this.value;
             generateSVG();
         });
 
         blendRatioSlider.addEventListener('input', function() {
-            blendRatio = parseFloat(this.value);
+            state.blendRatio = parseFloat(this.value);
             blendRatioValue.textContent = this.value;
             generateSVG();
         });
 
         obsDelay1Slider.addEventListener('input', function() {
-            obsDelays[0] = parseInt(this.value);
+            state.obsDelays[0] = parseInt(this.value);
             obsDelay1Value.textContent = this.value;
             generateSVG();
         });
 
         procDelay1Slider.addEventListener('input', function() {
-            procDelays[0] = parseInt(this.value);
+            state.procDelays[0] = parseInt(this.value);
             procDelay1Value.textContent = this.value;
             generateSVG();
         });
 
         obsDelay2Slider.addEventListener('input', function() {
-            obsDelays[1] = parseInt(this.value);
+            state.obsDelays[1] = parseInt(this.value);
             obsDelay2Value.textContent = this.value;
             generateSVG();
         });
 
         procDelay2Slider.addEventListener('input', function() {
-            procDelays[1] = parseInt(this.value);
+            state.procDelays[1] = parseInt(this.value);
             procDelay2Value.textContent = this.value;
             generateSVG();
         });
 
         obsPeriodSlider.addEventListener('input', function() {
-            obsPeriod = parseInt(this.value);
+            state.obsPeriod = parseInt(this.value);
             obsPeriodValue.textContent = this.value;
             generateSVG();
         });
